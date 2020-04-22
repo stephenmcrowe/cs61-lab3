@@ -5,8 +5,19 @@ import path from 'path';
 import morgan from 'morgan';
 
 import db from './db';
+import createEmployee from './controllers/employee_controller';
 
 console.log(`db imported successfully! ${db}`);
+// db.query('INSERT INTO Employees VALUES(UUID_TO_BIN(UUID(), true), \'asdf\', \'asdf\', CURRENT_DATE(), 2, true, \'a\');', (error, results, fields) => {
+//   if (error) {
+//     console.log(error);
+//     return;
+//   }
+//   console.log('results:');
+//   console.log(results);
+//   console.log('fields:');
+//   console.log(fields);
+// });
 
 // initialize
 const app = express();
@@ -36,6 +47,8 @@ app.use(bodyParser.json());
 app.get('/', (req, res) => {
   res.send('hi');
 });
+
+app.post('/employees', createEmployee);
 
 // START THE SERVER
 // =============================================================================

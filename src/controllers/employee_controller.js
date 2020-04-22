@@ -31,3 +31,10 @@ export const getEmployees = (req, res) => {
   query = mysql.raw(query.join(' AND '));
   connection.query('SELECT * FROM Employees WHERE ?', query, formatResult(res));
 };
+
+export const getEmployee = (req, res) => {
+  // Getting the id in an appropriate format will be annoying
+  console.log(req.params.id);
+  connection.query('SELECT * FROM Employees WHERE EmployeeId = ?',
+    req.params.id, formatResult(res));
+};

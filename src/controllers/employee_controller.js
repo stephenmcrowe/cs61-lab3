@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import mysql from 'mysql';
 import connection from '../db';
-import createMySqlDate from '../utils/format';
+import { createMySqlDate, formatResult } from '../utils/format';
 
 export const createEmployee = (req, res) => {
   console.log(req.body);
@@ -18,18 +18,7 @@ export const createEmployee = (req, res) => {
     Salt: salt,
   };
   console.log(em);
-  connection.query('INSERT INTO Employees SET ?', em, (err, results, fields) => {
-    if (err) {
-      console.log(err);
-      res.json({ status: 500, error: err.sqlMessage, response: null });
-      return;
-    }
-    console.log('results:');
-    console.log(results);
-    console.log('fields:');
-    console.log(fields);
-    res.json({ status: 200, error: null, response: results });
-  });
+  connection.query('INSERT INTO Employees SET ?', em, formatResult(res));
 };
 
 export const getEmployees = (req, res) => {
@@ -40,16 +29,5 @@ export const getEmployees = (req, res) => {
   });
   console.log(query);
   query = mysql.raw(query.join(' AND '));
-  connection.query('SELECT * FROM Employees WHERE ?', query, (err, results, fields) => {
-    if (err) {
-      console.log(err);
-      res.json({ status: 500, error: err.sqlMessage, response: null });
-      return;
-    }
-    console.log('results:');
-    console.log(results);
-    console.log('fields:');
-    console.log(fields);
-    res.json({ status: 200, error: null, response: results });
-  });
+  connection.query('SELECT * FROM Employees WHERE ?', query, formatResult(res));
 };

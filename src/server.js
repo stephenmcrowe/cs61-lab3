@@ -4,6 +4,10 @@ import cors from 'cors';
 import path from 'path';
 import morgan from 'morgan';
 
+import db from './db';
+
+console.log(`db imported successfully! ${db}`);
+
 // initialize
 const app = express();
 
@@ -35,7 +39,7 @@ app.get('/', (req, res) => {
 
 // START THE SERVER
 // =============================================================================
-const port = process.env.PORT || 9090;
+const port = process.env.PORT || 3000;
 app.listen(port);
 
 console.log(`listening on: ${port}`);

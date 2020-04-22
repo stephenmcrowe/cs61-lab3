@@ -39,3 +39,10 @@ This repo is already equipped with the following from Prof. Tim Tregubov's serve
 * airbnb eslint rules
 
 Procfile set up to run on [heroku](https://devcenter.heroku.com/articles/getting-started-with-nodejs#deploy-the-app)
+
+## TODO
+
+* get (singular), update, delete
+* client side (terminal for now)
+* login credentials stuff/privileges
+* Create a new database user that the api will use to access the database

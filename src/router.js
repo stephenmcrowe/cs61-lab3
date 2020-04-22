@@ -11,4 +11,7 @@ router.route('/employees')
   .get(Employees.getEmployees)
   .post(Employees.createEmployee);
 
+router.route('/employees/:id')
+  .get(Employees.getEmployee);
+
 export default router;

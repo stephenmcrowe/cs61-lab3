@@ -12,6 +12,8 @@ router.route('/employees')
   .post(Employees.createEmployee);
 
 router.route('/employees/:id')
-  .get(Employees.getEmployee);
+  .get(Employees.getEmployee)
+  .put(Employees.updateEmployee)
+  .delete(Employees.deleteEmployee);
 
 export default router;

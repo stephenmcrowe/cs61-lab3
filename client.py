@@ -1,7 +1,7 @@
 
 import sys
 import requests
-
+import jwt
 
 baseURL = "localhost:3000/employees"
 
@@ -76,7 +76,7 @@ def collect_hire_date():
     try:
         if yr == '%':
             return None
-        int(yr)
+        yr = int(yr)
     except ValueError:
         yr = -1
 
@@ -89,24 +89,24 @@ def collect_hire_date():
     month = -1
     while month < 1 or month > 12:
         try:
-            month = int(input("year: must be positive, b/w 1 and 12: "))
+            month = int(input("month: must be positive, b/w 1 and 12: "))
         except ValueError:
             month = -1
     
     day = -1
     while day < 1 or day > 31:
         try:
-            day = int(input("year: must be positive, b/w 1 and 31: "))
+            day = int(input("day: must be positive, b/w 1 and 31: "))
         except ValueError:
             day = -1
-    return str(yr + '-' + month + '-' + day)
+    return str(str(yr) + '-' + str(month) + '-' + str(day))
 
 def collect_salary():
     salary = input("Time to enter a salary, enter % to skip specifiying on hire date, else enter a salary: ")
     if salary == '%':
         return None
     try:
-        int(salary)
+        salary = int(salary)
     except ValueError:
         salary = -1
     while salary < 0:
@@ -131,7 +131,47 @@ def collect_password():
     password = input("please enter a password, press % to not specify: ")
     if password == '%':
         return None
+    else:
+        return password
+
+def collect_all_data():
+    data = dict()
+    user = collect_user()
+    hire_date = collect_hire_date()
+    salary = collect_salary()
+    is_admin = collect_is_admin()
+    password = collect_password()
+    if user != None:
+        data['Username'] = user
+    if hire_date != None:
+        data['HireDate'] = hire_date
+    if salary != None:
+        data['Salary'] = salary
+    if is_admin != None:
+        data['IsAdmin'] = is_admin
+    if password != None:
+        data['Password'] = password
+    return data
     
+def collect_create_data():
+    data = dict()
+    user = input("Please enter a username: ")
+    hire_date = collect_hire_date()
+    salary = collect_salary()
+    is_admin = collect_is_admin()
+    password = collect_password()
+    if user != None:
+        data['Username'] = user
+    if hire_date != None:
+        data['HireDate'] = hire_date
+    if salary != None:
+        data['Salary'] = salary
+    if is_admin != None:
+        data['IsAdmin'] = is_admin
+    if password != None:
+        data['Password'] = password
+    return data
+
 
 
 
@@ -150,96 +190,61 @@ def handle_admin(usr, pswd):
                 response = input("c for create, r to read, u to update, d to delete: ")
             print("please enter some info for specify your request")
 
-            
-
             if response == 'c':
-                data = dict()
-                user = input("enter a username: ")
-                while user == '%' or len(user) > 45:
-                    user = input("username is required")
-                hire_date = collect_hire_date()
-                salary = collect_salary()
-                is_admin = collect_is_admin()
-                password = collect_password()
-                data['Username'] = user
-                if password == None:
-                    data['Password'] = password
-                if hire_date != None:
-                    data['HireDate'] = hire_date
-                if salary != None:
-                    data['Salary'] = salary
-                if is_admin != None:
-                    data['isAdmin'] =  is_admin
-                
-                #reate(baseURL, data)
-            #     # do smth
+                print("Please enter all the data for the profile you whish to create")
+                data = collect_create_data()
+    
             elif response == 'r':
-                user = collect_user()
-                hire_date = collect_hire_date()
-                salary = collect_salary()
-                is_admin = collect_is_admin()
-                data = dict()
-                if user != None:
-                    data['Username'] = user
-                if hire_date != None:
-                    data['HireDate'] = hire_date
-                if salary != None:
-                    data['Salary'] = salary
-                if is_admin != None:
-                    data['isAdmin'] = is_admin
-                if password == None:
-                    data['Password'] = password
-                #read(baseURL, data)
-            #     # do smth
-            elif response == 'u':
-                print("first specify the health inspectors you want to update")
-                user = collect_user()
-                hire_date = collect_hire_date()
-                salary = collect_salary()
-                is_admin = collect_is_admin()
-                data = dict()
-                if user != None:
-                    data['old_Username'] = user
-                if hire_date != None:
-                    data['old_HireDate'] = hire_date
-                if salary != None:
-                    data['old_Salary'] = salary
-                if is_admin != None:
-                    data['old_isAdmin'] = is_admin
-                if password == None:
-                    data['Password'] = password
-                print("now, specify the new data you wish to update")
-                user = collect_user()
-                hire_date = collect_hire_date()
-                salary = collect_salary()
-                is_admin = collect_is_admin()
-                if user != None:
-                    data['new_Username'] = user
-                if hire_date != None:
-                    data['new_HireDate'] = hire_date
-                if salary != None:
-                    data['new_Salary'] = salary
-                if is_admin != None:
-                    data['new_isAdmin'] = is_admin
-                if password == None:
-                    data['new_Password'] = password
-                #update(baseURL, data)
+                read(baseURL, collect_all_data())
 
-            #     # do smth
+            elif response == 'u':
+                print("first specify the health inspectors for which you want to update info")
+                old_data = collect_all_data()
+                print("now, specify the new data you wish to update")
+                new_data = collect_all_data()
+                #update(baseURL, old_data. new_data)
+
             else: # response == 'd'
-                user = collect_user()
-                hire_date = collect_hire_date()
-                salary = collect_salary()
-                is_admin = collect_is_admin()
-                data = dict()
-                if user != None:
-                    data['Username'] = user
-                if hire_date != None:
-                    data['HireDate'] = hire_date
-                if salary != None:
-                    data['Salary'] = salary
-                if is_admin != None:
-                    data['isAdmin'] = is_admin
+                data = collect_all_data()
+            
+            response = input("Press y to perform another operation, or n to quit: ")
+            while response != 'y' and response !='n':
+                response = input("y or n")
+            if response == 'n':
+                running = False
+
+def handle_non_admin(usr, pswd):
+    response = input("Press y to enter options, or n to quit: ")
+    while response != 'y' and response != 'n':
+        response = input("y for more options, or n to quit: ")
+    if response == 'n':
+        return
+    else:
+        running = True
+        while running:
+            response = input("press r to read your data or u to update your data: ")
+            valid_activites = {'r', 'u'}
+            while response not in valid_activites:
+                response = input("c for create, r to read, u to update, d to delete: ")
+            print("please enter some info for specify your request")
+
+            if response == 'r':
+                data = {'Username':usr, 'Psswrd':pswd}
+                read(baseURL, collect_all_data())
+
+            elif response == 'u':
+                print("specify the new data you wish to update")
+                new_data = collect_all_data()
+                #update(baseURL, old_data. new_data)
+
+            response = input("Press y to perform another operation, or n to quit: ")
+            while response != 'y' and response !='n':
+                response = input("y or n")
+            if response == 'n':
+                running = False
+
+
+
 
 if __name__ == '__main__':
     handle_admin("bs", "lol")

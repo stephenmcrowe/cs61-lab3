@@ -1,4 +1,3 @@
-
 import sys
 import requests
 import jwt
@@ -9,8 +8,8 @@ def login(username, password):
     return True
 
 def create(url, fields):
-    res = requests.put(url, fields)
-#expecting to get a status of 200 on success
+    res = requests.post(url, fields)
+    # expecting to get a status of 200 on success
     if res.json()['status'] != 200:
         print("Something went wrong {}".format(res.status_code))
         exit()
@@ -230,7 +229,7 @@ def handle_non_admin(usr, pswd):
 
             if response == 'r':
                 data = {'Username':usr, 'Psswrd':pswd}
-                read(baseURL, collect_all_data())
+                read(baseURL, data)
 
             elif response == 'u':
                 print("specify the new data you wish to update")
@@ -258,8 +257,6 @@ if __name__ == '__main__':
         print("Invalid Password/Username combination")
         username = input("Please enter your Username: ")
         password = input("Password: ")  
-
-
     
 
 

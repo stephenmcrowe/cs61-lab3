@@ -6,7 +6,11 @@ export const signin = (req, res) => {
   res.send({
     status: 200,
     error: null,
-    response: tokenForUser(req.user.EmployeeId),
+    response: {
+      EmployeeId: req.user.EmployeeId,
+      IsAdmin: req.user.IsAdmin,
+      token: tokenForUser(req.user.EmployeeId),
+    },
   });
 };
 

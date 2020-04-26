@@ -1,7 +1,7 @@
-import bcrypt from 'bcryptjs';
 import mysql from 'mysql';
 import db from '../db';
 import createMySqlDate from '../utils/format';
+import { genSaltedPassword } from '../utils/encrypt';
 
 const INSERT = 'INSERT INTO Employees SET ?';
 const SELECT_NEW_UUID = 'SELECT UUID()';
@@ -17,13 +17,10 @@ export const createEmployee = (req, res) => {
   db.query(SELECT_NEW_UUID)
     .then((uuidResults) => {
       uuid = uuidResults[0]['UUID()'];
-      const salt = bcrypt.genSaltSync(10);
-      const password = bcrypt.hashSync(req.body.Password, salt);
+      const passwordObj = genSaltedPassword(req.body.Password);
       const em = Object.assign({
         EmployeeId: mysql.raw(`UUID_TO_BIN('${uuid}', true)`),
-        Psswrd: password,
-        Salt: salt,
-      }, result);
+      }, passwordObj, result);
       result.EmployeeId = uuid;
       return db.query(INSERT, em);
     })
@@ -88,9 +85,10 @@ const UPDATE_BY_ID = `UPDATE Employees SET ? ${WHERE_ID}`;
 export const updateEmployee = (req, res) => {
   const update = req.body;
   if (req.body.Password) {
-    const Salt = bcrypt.genSaltSync(10);
-    const Psswrd = bcrypt.hashSync(req.body.Password, Salt);
-    Object.assign(update, { Salt, Psswrd });
+    const passwordObj = genSaltedPassword(req.body.Password);
+    // const Salt = bcrypt.genSaltSync(10);
+    // const Psswrd = bcrypt.hashSync(req.body.Password, Salt);
+    Object.assign(update, passwordObj);
   }
   if (req.body.HireDate) {
     const hd = new Date(req.body.HireDate);

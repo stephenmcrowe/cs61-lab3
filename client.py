@@ -8,6 +8,7 @@ def login(username, password):
     return True
 
 def create(url, fields):
+    headers = { "Authorization": "JWT {}".format(token) }
     res = requests.post(url, fields)
     # expecting to get a status of 200 on success
     if res.json()['status'] != 200:
@@ -41,6 +42,7 @@ def update(url, data):
 
 
 def delete(url):
+    # "http://localhost:3000/employees/{}".format(uuid)
     res = requests.delete(url)
     #expecting to get a status of 200 on success
     if res.json()['status'] != 200:

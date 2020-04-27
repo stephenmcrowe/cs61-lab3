@@ -9,7 +9,7 @@ export const createEmployee = (req, res) => {
   const hiredate = req.body.HireDate ? new Date(req.body.HireDate) : new Date();
   const result = {
     Username: req.body.Username,
-    HireDate: createMySqlDate(hiredate),
+    // HireDate: createMySqlDate(hiredate),
     Salary: req.body.Salary,
     IsAdmin: req.body.IsAdmin ? req.body.IsAdmin : 0, // Default to 0
   };

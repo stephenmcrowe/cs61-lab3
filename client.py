@@ -1,3 +1,13 @@
+'''
+Stephen Crowe, Shikhar Sinha
+Prof. Pierson
+CS61: Databases
+27 April 2020
+
+The Client Side of our Lab 3 Application
+
+'''
+
 import sys
 import requests
 import jwt
@@ -34,8 +44,11 @@ def create(fields):
     res = requests.post(baseURL, data=fields,headers=header)
     # expecting to get a status of 201 on success
     if res.status_code != 200:
-        print("Something went wrong {}".format(res.status_code))
-        exit()
+        if not res.json().get('error'):
+            print("Something went wrong {}".format(res.status_code))
+            return 
+        print(res.json()['error'])
+        return
 
     print(res.json()['response'])
 
@@ -47,7 +60,7 @@ def read(fields):
 	#expecting to get a status of 200 on success
     if res.status_code != 200:
         print("Something went wrong {}".format(res.status_code))
-        exit()
+        return
     for employee in res.json()['response']:
         print(employee)
         print()
@@ -60,7 +73,7 @@ def read_self():
     #expecting to get a status of 200 on success
     if res.status_code != 200:
         print("Something went wrong {}".format(res.status_code))
-        exit()
+        return
     print(res.json()['response'][0])
     print()
     
@@ -74,7 +87,7 @@ def update(employee_to_change, data):
     #expecting to get a status of 200 on success
     if res.status_code != 200:
         print('Something went wrong {}'.format(res.status_code))
-        exit()
+        return
     print(res.json()['response'])
     print()
 
@@ -86,7 +99,7 @@ def delete(employeeID):
     #expecting to get a status of 200 on success
     if res.status_code != 200:
         print('Something went wrong {}'.format(res.status_code))
-        exit()
+        return
     print('delete succeeded')
     # print(res.json())
 
@@ -173,7 +186,30 @@ def collect_password():
     else:
         return password
 
-def collect_all_data():
+def collect_read_data():
+    data = dict()
+    user = input("Please enter a username (at most 45 characters). Enter % to not specify a username. Enter ! to not specify on any fields: ")
+    while len(user) > 45:
+        user = input("Username must be at most 45 characters")
+ 
+    if user != None:
+        if(user == '!'):
+            return data
+        if(user != '%'):
+            data['Username'] = user
+
+    hire_date = collect_hire_date()
+    salary = collect_salary()
+    is_admin = collect_is_admin()
+    if hire_date != None:
+        data['HireDate'] = hire_date
+    if salary != None:
+        data['Salary'] = salary
+    if is_admin != None:
+        data['IsAdmin'] = is_admin
+    return data
+
+def collect_update_data():
     data = dict()
     user = collect_user()
     hire_date = collect_hire_date()
@@ -254,12 +290,12 @@ def handle_admin(usr, pswd):
                 create(data)
     
             elif response == 'r':
-                read(collect_all_data())
+                read(collect_read_data())
 
             elif response == 'u':
                 employee_to_change = input("\nFirst specify the employeeID you want to update\n")
                 print("\nNow, specify the new data you wish to update\n")
-                new_data = collect_all_data()
+                new_data = collect_update_data()
                 update(employee_to_change, new_data)
 
             else: # response == 'd'
@@ -270,7 +306,7 @@ def handle_admin(usr, pswd):
             
             response = input("\nPress y to perform another operation, or n to quit: ")
             while response != 'y' and response !='n':
-                response = input("\ny or n")
+                response = input("\ny or n: ")
             if response == 'n':
                 running = False
 
@@ -298,7 +334,7 @@ def handle_non_admin(usr, pswd):
 
             response = input("\nPress y to perform another operation, or n to quit: ")
             while response != 'y' and response !='n':
-                response = input("\ny or n")
+                response = input("\ny or n: ")
             if response == 'n':
                 running = False
 

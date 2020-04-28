@@ -55,6 +55,16 @@ Run the command `pipenv install` to install python dependencies.
 
 Or, if your Python packages are installed locally, just `python client.py`.
 
+## Testing
+
+This repository is equipped with a sql script for initializing the MYSQL database with an Employees table. It also adds two users to the table for testing:
+
+ * username = 'admin', password = 'admin'
+ * username = 'user', password = 'user'
+
+Use these to login with the client.
+
+## Acknowledgements
 
 Thanks to Prof. Tim Tregubov for equipping this repo with the following from his server starterpack:
 

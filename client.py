@@ -2,76 +2,109 @@ import sys
 import requests
 import jwt
 
-baseURL = "localhost:3000/employees"
+baseURL = "http://localhost:3000/employees"
+token = None
+isAdmin = 0
+employeeID = 0
+global header
 
 def login(username, password):
-    return True
+    global token
+    global isAdmin
+    global employeeID
+    global header
+    res = requests.post("http://localhost:3000/signin", data={ 'username':username, 'password':password})
+    if res.json()['status'] != 200:
+        print("Something went wrong {}".format(res.status_code))
+        return False
+    if res.json()['error'] != None:
+        print(res.json()['error'])
+        return False
+    else:
+        token = res.json()['response']['token']
+        isAdmin = res.json()['response']['IsAdmin']
+        employeeID = res.json()['response']['EmployeeId']
+        header = { "Authorization": "JWT {}".format(token) }
+        return True
 
-def create(url, fields):
-    headers = { "Authorization": "JWT {}".format(token) }
-    res = requests.post(url, fields)
-    # expecting to get a status of 200 on success
+
+def create(fields):
+    global header
+    # make sure this works when the header isnt passed
+    res = requests.post(baseURL, data=fields,headers=header)
+    # expecting to get a status of 201 on success
     if res.json()['status'] != 200:
         print("Something went wrong {}".format(res.status_code))
         exit()
 
-    print("put succeeded")
-    print(res.json())
+    print(res.json()['response'])
 
 
-def read(url, fields):
+def read(fields):
     #make get call to url
-	res = requests.get(url, params=fields)
+    global header
+    res = requests.get(baseURL, params=fields, headers=header)
 	#expecting to get a status of 200 on success
-	if res.json()['status'] != 200:
-		print("Something went wrong {}".format(res.status_code))
-		exit()
-	print("get succeeded")
-	# for inspector in res.json()['response']:
-		# print inspector["Us"],restaurant["RestaurantName"],restaurant["Boro"]
+    if res.json()['status'] != 200:
+        print("Something went wrong {}".format(res.status_code))
+        exit()
+    for employee in res.json()['response']:
+        print(employee)
+        print()
 
-def update(url, data):
+
+def read_self():
+    global header
+    global employeeID
+    res = requests.get(baseURL + "/" + str(employeeID), headers=header)
+    #expecting to get a status of 200 on success
+    if res.json()['status'] != 200:
+        print("Something went wrong {}".format(res.status_code))
+        exit()
+    print(res.json()['response'][0])
+    print()
+    
+
+def update(employee_to_change, data):
     #make post call to url passing it data
-	res = requests.post(url, json=data)
-	#expecting to get a status of 201 on success
-	if res.json()['status'] != 201:
-		print('Something went wrong {}'.format(res.status_code))
-		exit()
-	print('post succeeded')
-	print(res.json())
+    global header
+    # res = requests.put(baseURL, params={'id':employee_to_change},data=data, headers=header)
+    res = requests.put(baseURL+'/'+str(employee_to_change),data=data, headers=header)
 
-
-def delete(url):
-    # "http://localhost:3000/employees/{}".format(uuid)
-    res = requests.delete(url)
     #expecting to get a status of 200 on success
     if res.json()['status'] != 200:
         print('Something went wrong {}'.format(res.status_code))
         exit()
-    print('post succeeded')
-    print(res.json())
+    print(res.json()['response'])
+    print()
+
+
+def delete(employeeID):
+    url = "http://localhost:3000/employees/{}".format(employeeID)
+    global header
+    res = requests.delete(url, headers=header)
+    #expecting to get a status of 200 on success
+    if res.json()['status'] != 200:
+        print('Something went wrong {}'.format(res.status_code))
+        exit()
+    print('delete succeeded')
+    # print(res.json())
 
 
 
 
-'''
-Fields of Interest that someone can select on:
-Username
-HireDate
-Salary
-IsAdmin
-'''
+
 
 def collect_user():
-    user = input("please enter a username (at most 45 characters). Enter % to allow any username: ")
+    user = input("Please enter a username (at most 45 characters). Enter % to not specify a username: ")
     while len(user) > 45:
-        user = input("username must be less than 45 characters: ")
+        user = input("\nUsername must be less than 45 characters: ")
     if user == '%':
         return None
     return user
 
 def collect_hire_date():
-    yr = input("Time to enter a year of hire, enter % to skip specifiying on hire date, else enter a year: ")
+    yr = input("\nDate of hire, enter % to skip specifiying on hire date, else enter a year: ")
     if yr == '%':
         return None
     try:
@@ -83,36 +116,38 @@ def collect_hire_date():
 
     while yr < 0:
         try:
-            yr = int(input("year: must be positive integer: "))
+            yr = int(input("\nYear: must be positive integer: "))
         except ValueError:
             yr = -1
 
     month = -1
     while month < 1 or month > 12:
         try:
-            month = int(input("month: must be positive, b/w 1 and 12: "))
+            month = int(input("\nMonth: must be positive, b/w 1 and 12: "))
         except ValueError:
             month = -1
     
     day = -1
     while day < 1 or day > 31:
         try:
-            day = int(input("day: must be positive, b/w 1 and 31: "))
+            day = int(input("\nDay: must be positive, b/w 1 and 31: "))
         except ValueError:
             day = -1
-    return str(str(yr) + '-' + str(month) + '-' + str(day))
+    res = str(str(yr) + '-' + str(month) + '-' + str(day))
+    print(res)
+    return res
 
 def collect_salary():
-    salary = input("Time to enter a salary, enter % to skip specifiying on hire date, else enter a salary: ")
+    salary = input("\nEnter a salary. Enter % to skip specifiying a salary: ")
     if salary == '%':
         return None
     try:
         salary = int(salary)
     except ValueError:
         salary = -1
-    while salary < 0:
+    while salary <= 0:
         try:
-            salary = input("salary: must be positive: ")
+            salary = input("\nSalary: must be positive: ")
             if salary == '%':
                 return None
             salary = int(salary)
@@ -121,15 +156,18 @@ def collect_salary():
     return str(salary)
 
 def collect_is_admin():
-    is_admin = input("If you which to specify on admin status, press y or n, else press '%': ")
+    is_admin = input("\nAdmin status: press y (admin) or n (not). Enter '%' to not specify: ")
     while is_admin != 'y' and  is_admin != 'n' and is_admin != '%':
-        is_admin = input("please enter y, n, or %: ")
+        is_admin = input("Please enter y, n, or %: ")
     if is_admin == '%':
         return None
-    return is_admin
+    elif is_admin == 'y':
+        return 1
+    else:
+        return 0
 
 def collect_password():
-    password = input("please enter a password, press % to not specify: ")
+    password = input("\nEnter a password, press % to not specify: ")
     if password == '%':
         return None
     else:
@@ -153,13 +191,12 @@ def collect_all_data():
     if password != None:
         data['Password'] = password
     return data
-    
-def collect_create_data():
+
+def collect_change_own_data():
     data = dict()
-    user = input("Please enter a username: ")
+    user = collect_user()
     hire_date = collect_hire_date()
     salary = collect_salary()
-    is_admin = collect_is_admin()
     password = collect_password()
     if user != None:
         data['Username'] = user
@@ -167,80 +204,101 @@ def collect_create_data():
         data['HireDate'] = hire_date
     if salary != None:
         data['Salary'] = salary
-    if is_admin != None:
-        data['IsAdmin'] = is_admin
     if password != None:
         data['Password'] = password
+    return data
+    
+def collect_create_data():
+    data = dict()
+    user = None
+    while user == None:
+        user = input("Please enter a username (can't be empty): ")
+    hire_date = collect_hire_date()
+    salary = collect_salary()
+    is_admin = collect_is_admin()
+    password = None
+    while password == None:
+        password = input("\nPlease enter a password (can't be empty): ")
+    data['Username'] = user
+    if hire_date != None:
+        data['HireDate'] = hire_date
+    if salary != None:
+        data['Salary'] = salary
+    if is_admin != None:
+        data['IsAdmin'] = is_admin
+    data['Password'] = password
     return data
 
 
 
 
 def handle_admin(usr, pswd):
-    response = input("Press y to enter options, or n to quit: ")
+    response = input("Press y to view options, or n to quit: ")
     while response != 'y' and response != 'n':
-        response = input("y for more options, or n to quit: ")
+        response = input("y for view options, or n to quit: ")
     if response == 'n':
         return
     else:
+        print("\nAny changes you make to your own admin status or anyone else's will be applied at the modified user's next login\n")
         running = True
         while running:
-            response = input("press c to create a record, r to read records, u to update a record, or d to delete a record: ")
+            response = input("\npress c to create a record, r to read records, u to update a record, or d to delete a record: ")
             valid_activites = {'c', 'r', 'u', 'd'}
             while response not in valid_activites:
-                response = input("c for create, r to read, u to update, d to delete: ")
-            print("please enter some info for specify your request")
+                response = input("\nc for create, r to read, u to update, d to delete: ")
+
 
             if response == 'c':
-                print("Please enter all the data for the profile you whish to create")
+                print("\nPlease enter all the data for the profile you wish to create\n")
                 data = collect_create_data()
+                create(data)
     
             elif response == 'r':
-                read(baseURL, collect_all_data())
+                read(collect_all_data())
 
             elif response == 'u':
-                print("first specify the health inspectors for which you want to update info")
-                old_data = collect_all_data()
-                print("now, specify the new data you wish to update")
+                employee_to_change = input("\nFirst specify the employeeID you want to update\n")
+                print("\nNow, specify the new data you wish to update\n")
                 new_data = collect_all_data()
-                #update(baseURL, old_data. new_data)
+                update(employee_to_change, new_data)
 
             else: # response == 'd'
-                data = collect_all_data()
+                to_delete = input("\nEnter the employeeID of the user you wish to delete: ")
+                while to_delete == None:
+                    to_delete = input("\nEnter the employeeID of the user you wish to delete: ")
+                delete(to_delete)
             
-            response = input("Press y to perform another operation, or n to quit: ")
+            response = input("\nPress y to perform another operation, or n to quit: ")
             while response != 'y' and response !='n':
-                response = input("y or n")
+                response = input("\ny or n")
             if response == 'n':
                 running = False
 
 def handle_non_admin(usr, pswd):
-    response = input("Press y to enter options, or n to quit: ")
+    response = input("\nPress y to view options, or n to quit: ")
     while response != 'y' and response != 'n':
-        response = input("y for more options, or n to quit: ")
+        response = input("\ny for more options, or n to quit: ")
     if response == 'n':
         return
     else:
         running = True
         while running:
-            response = input("press r to read your data or u to update your data: ")
+            response = input("\nPress r to read your data or u to update your data: ")
             valid_activites = {'r', 'u'}
             while response not in valid_activites:
-                response = input("c for create, r to read, u to update, d to delete: ")
-            print("please enter some info for specify your request")
+                response = input("\nr to read, u to update: ")
 
             if response == 'r':
-                data = {'Username':usr, 'Psswrd':pswd}
-                read(baseURL, data)
+                read_self()
 
             elif response == 'u':
-                print("specify the new data you wish to update")
-                new_data = collect_all_data()
-                #update(baseURL, old_data. new_data)
+                print("\nSpecify the new data you wish to update")
+                new_data = collect_change_own_data()
+                update(employeeID, new_data)
 
-            response = input("Press y to perform another operation, or n to quit: ")
+            response = input("\nPress y to perform another operation, or n to quit: ")
             while response != 'y' and response !='n':
-                response = input("y or n")
+                response = input("\ny or n")
             if response == 'n':
                 running = False
 
@@ -248,7 +306,6 @@ def handle_non_admin(usr, pswd):
 
 
 if __name__ == '__main__':
-    handle_admin("bs", "lol")
 
     print("Welcome Health Inspector!")
     username = input("Please enter your Username: ")
@@ -256,9 +313,14 @@ if __name__ == '__main__':
 
     # Send login info
     while not(login(username, password)):
-        print("Invalid Password/Username combination")
         username = input("Please enter your Username: ")
-        password = input("Password: ")  
-    
+        password = input("Password: ") 
+
+    print("Welcome\n")
+
+    if isAdmin == 1:
+        handle_admin(username, password)
+    else:
+        handle_non_admin(username, password)
 
 

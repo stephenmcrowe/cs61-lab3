@@ -1,8 +1,17 @@
 # cs61-lab3
 
+ * Stephen Crowe, Shikhar Sinha
+ * Prof. Pierson
+ * CS61: Databases
+ * 27 April 2020
+
+This is our lab 3 submission utilizing a node.js express server for the endpoints and a simple python client to access the api. See below for installation instructions.
+
 ## Dev Setup
 
 ### Requirements
+
+API requirements
 
 * Node >=9 <=11
 * yarn (preferred over npm)
@@ -23,26 +32,34 @@ yarn --version
 
 To install on Windows, install from [nodejs.org](https://nodejs.org/en/) and [yarnpkg.com](https://classic.yarnpkg.com/en/).
 
-### Install node modules
 
-Run the command `yarn`.
+Client requirements
+
+* pipenv
+* python 3.8
+
+Alternatively, install requests and pyjwt
+
+### Install dependencies
+
+Run the command `yarn` to install node modules.
+Run the command `pipenv install` to install python dependencies.
 
 ### Start the server
 
 `yarn start`
 
+### Start the client
 
-This repo is already equipped with the following from Prof. Tim Tregubov's server starterpack:
+`pipenv run python client.py`
+
+Or, if your Python packages are installed locally, just `python client.py`.
+
+
+Thanks to Prof. Tim Tregubov for equipping this repo with the following from his server starterpack:
 
 * node with babel
 * expressjs
 * airbnb eslint rules
 
 Procfile set up to run on [heroku](https://devcenter.heroku.com/articles/getting-started-with-nodejs#deploy-the-app)
-
-## TODO
-
-* get (singular), update, delete
-* client side (terminal for now)
-* login credentials stuff/privileges
-* Create a new database user that the api will use to access the database

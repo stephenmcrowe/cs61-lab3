@@ -14,10 +14,10 @@ def login(username, password):
     global employeeID
     global header
     res = requests.post("http://localhost:3000/signin", data={ 'username':username, 'password':password})
-    if res.json()['status'] != 200:
-        print("Something went wrong {}".format(res.status_code))
-        return False
-    if res.json()['error'] != None:
+    if res.status_code != 200:
+        if not res.json().get('error'):
+            print("Something went wrong {}".format(res.status_code))
+            return False
         print(res.json()['error'])
         return False
     else:
@@ -33,7 +33,7 @@ def create(fields):
     # make sure this works when the header isnt passed
     res = requests.post(baseURL, data=fields,headers=header)
     # expecting to get a status of 201 on success
-    if res.json()['status'] != 200:
+    if res.status_code != 200:
         print("Something went wrong {}".format(res.status_code))
         exit()
 
@@ -45,7 +45,7 @@ def read(fields):
     global header
     res = requests.get(baseURL, params=fields, headers=header)
 	#expecting to get a status of 200 on success
-    if res.json()['status'] != 200:
+    if res.status_code != 200:
         print("Something went wrong {}".format(res.status_code))
         exit()
     for employee in res.json()['response']:
@@ -58,7 +58,7 @@ def read_self():
     global employeeID
     res = requests.get(baseURL + "/" + str(employeeID), headers=header)
     #expecting to get a status of 200 on success
-    if res.json()['status'] != 200:
+    if res.status_code != 200:
         print("Something went wrong {}".format(res.status_code))
         exit()
     print(res.json()['response'][0])
@@ -72,7 +72,7 @@ def update(employee_to_change, data):
     res = requests.put(baseURL+'/'+str(employee_to_change),data=data, headers=header)
 
     #expecting to get a status of 200 on success
-    if res.json()['status'] != 200:
+    if res.status_code != 200:
         print('Something went wrong {}'.format(res.status_code))
         exit()
     print(res.json()['response'])
@@ -84,7 +84,7 @@ def delete(employeeID):
     global header
     res = requests.delete(url, headers=header)
     #expecting to get a status of 200 on success
-    if res.json()['status'] != 200:
+    if res.status_code != 200:
         print('Something went wrong {}'.format(res.status_code))
         exit()
     print('delete succeeded')

@@ -143,6 +143,7 @@ export const updateEmployee = (req, res) => {
   if (req.body.Password) {
     const passwordObj = genSaltedPassword(req.body.Password);
     Object.assign(update, passwordObj);
+    delete update.Password;
   }
   if (req.body.HireDate) {
     const hd = new Date(req.body.HireDate);
@@ -156,8 +157,11 @@ export const updateEmployee = (req, res) => {
     }
   }
   db.query(UPDATE_BY_ID, [update, req.params.id])
-    .then((result) => {
-      res.status(200).json({ error: null, response: result });
+    .then(() => {
+      res.status(200).json({
+        error: null,
+        response: 'Information updated successfully',
+      });
     })
     .catch((err) => {
       console.log(err);
@@ -176,7 +180,7 @@ export const deleteEmployee = (req, res) => {
   }
   db.query(DELETE_BY_ID, req.params.id)
     .then((result) => {
-      res.status(200).json({ error: null, response: result });
+      res.status(200).json({ error: null, response: 'Deleted successfully' });
     })
     .catch((err) => {
       console.log(err);
